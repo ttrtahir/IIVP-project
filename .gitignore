@@ -1,0 +1,11 @@
+.DS_Store
+.venv/
+.vscode/
+__pycache__/
+*.py[cod]
+
+.pytest_cache/
+runs/
+submissions/
+models/
+iivp-2026-challenge/
