@@ -44,3 +44,20 @@ def count_labels(labels):
 def print_label_counts(counts):
     for label in range(NUM_CLASSES):
         print(f"class {label}: {counts[label]}")
+
+
+def prediction_rows_from_outputs(outputs, image_ids):
+    probabilities = torch.softmax(outputs, dim=1)
+    scores, labels = probabilities.max(dim=1)
+
+    if hasattr(image_ids, "detach"):
+        image_ids = image_ids.detach().cpu().tolist()
+    else:
+        image_ids = list(image_ids)
+
+    rows = []
+    labels = labels.detach().cpu().tolist()
+    scores = scores.detach().cpu().tolist()
+    for image_id, label, score in zip(image_ids, labels, scores):
+        rows.append({"Id": int(image_id), "Category": int(label), "Score": float(score)})
+    return rows
