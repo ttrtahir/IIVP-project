@@ -36,18 +36,24 @@ def preprocess_image(img):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
     img = cv2.resize(img, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_AREA)
-    img = img.astype(np.float32) / 255.0
 
-    #denoise bilateral
-    img_u8 = (img * 255).astype(np.uint8)
-    denoised = cv2.bilateralFilter(img_u8, 9, 75, 75)
+    # strecht histogram
+    img_u8 = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+
+    # blur
+    denoised = cv2.GaussianBlur(img_u8, (3, 3), 0)
 
     #threshold
     _, binary = cv2.threshold(denoised, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # noise removal with morph
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-    cleaned = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+    morphed = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
     
-    return cleaned.astype(np.float32) / 255.0
+    # erode
+    final_img = cv2.erode(morphed, kernel, iterations=1)
+
+    return final_img.astype(np.float32) / 255.0
 
 def load_and_preprocess(data_dir="data"):
 
