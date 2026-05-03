@@ -1,12 +1,12 @@
 from pathlib import Path
 
+import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 
 from .data import DigitDataset
 from .models import SimpleStrokeCNN
-from .train_simple import BATCH_SIZE, SAVE_PATH
-from .utils import count_labels, get_device, print_label_counts, write_csv
+from .train_simple import BATCH_SIZE, SAVE_PATH, get_device
 
 
 SUBMISSION_PATH = Path("submissions/simple_submission.csv")
@@ -28,40 +28,26 @@ def make_loader():
     return DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False)
 
 
-def to_list(values):
-    if hasattr(values, "tolist"):
-        return values.tolist()
-    return list(values)
-
-
 @torch.no_grad()
 def predict_rows(model, loader, device):
     rows = []
-    predictions_for_count = []
 
     for images, image_ids in loader:
         images = images.to(device)
         outputs = model(images)
         predictions = outputs.argmax(dim=1).cpu().tolist()
-        image_ids = to_list(image_ids)
+        image_ids = image_ids.tolist()
 
         for image_id, prediction in zip(image_ids, predictions):
             rows.append({"Id": int(image_id), "Category": int(prediction)})
-            predictions_for_count.append(int(prediction))
 
-    return rows, predictions_for_count
+    return rows
 
 
 def save_submission(rows):
     rows = sorted(rows, key=lambda row: row["Id"])
-    write_csv(SUBMISSION_PATH, ["Id", "Category"], rows)
-
-
-def print_prediction_summary(rows, predictions):
-    print("saved submission:", SUBMISSION_PATH)
-    print("number of rows:", len(rows))
-    print("prediction counts:")
-    print_label_counts(count_labels(predictions))
+    SUBMISSION_PATH.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows, columns=["Id", "Category"]).to_csv(SUBMISSION_PATH, index=False)
 
 
 def main():
@@ -70,12 +56,11 @@ def main():
 
     model = load_model(device)
     loader = make_loader()
-    rows, predictions = predict_rows(model, loader, device)
+    rows = predict_rows(model, loader, device)
 
     save_submission(rows)
-    print_prediction_summary(rows, predictions)
+    print("saved:", SUBMISSION_PATH)
 
 
 if __name__ == "__main__":
     main()
-
