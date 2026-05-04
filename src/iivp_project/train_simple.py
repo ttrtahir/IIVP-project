@@ -8,6 +8,7 @@ from .models import SimpleStrokeCNN
 BATCH_SIZE = 128
 EPOCHS = 25
 LR = 0.001
+SEED = 26
 VALIDATION_PART = 0.15
 SAVE_PATH = Path("models/simple_cnn.pt")
 
@@ -18,13 +19,18 @@ def get_device():
         return torch.device("cuda")
     return torch.device("cpu")
 
+def set_seed():
+    torch.manual_seed(SEED)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(SEED)
+
 def make_loaders():
     train_data = DigitDataset(split="train", augment=True)
     val_data = DigitDataset(split="train", augment=False)
     train_indices = []
     val_indices = []
 
-    generator = torch.Generator().manual_seed(26)
+    generator = torch.Generator().manual_seed(SEED)
     for label in sorted(train_data.records["Category"].unique()):
         label_indices = train_data.records.index[train_data.records["Category"] == label].tolist()
         order = torch.randperm(len(label_indices), generator=generator).tolist()
@@ -79,6 +85,7 @@ def evaluate(model, loader, loss_fn, device):
     return total_loss / batch_count, total_accuracy / batch_count
 
 def main():
+    set_seed()
     device = get_device()
     train_loader, val_loader = make_loaders()
     model = SimpleStrokeCNN().to(device)
