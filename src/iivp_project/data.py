@@ -34,9 +34,8 @@ def make_image_views(path):
     edge = edge / edge.max().clamp(min=1e-6)
 
     density = F.avg_pool2d(batch, kernel_size=5, stride=1, padding=2).squeeze(0)
-    binary = (raw > 0.10).float()
 
-    return torch.cat([raw, edge, density, binary], dim=0)
+    return torch.cat([raw, edge, density], dim=0)
 
 
 class DigitDataset(Dataset):
