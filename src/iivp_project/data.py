@@ -27,20 +27,32 @@ def load_grayscale_image(path):
     return TF.to_tensor(image)
 
 
-def make_image_views_from_image(image):
-    image = image.convert("L").resize((IMAGE_SIZE, IMAGE_SIZE))
-    raw = TF.to_tensor(image)
+def make_edge_view(raw):
     batch = raw.unsqueeze(0)
-
     edge_x = F.conv2d(batch, SOBEL_X, padding=1)
     edge_y = F.conv2d(batch, SOBEL_Y, padding=1)
     edge = torch.sqrt(edge_x**2 + edge_y**2 + 1e-6).squeeze(0)
-    edge = edge / edge.max().clamp(min=1e-6)
+    return edge / edge.max().clamp(min=1e-6)
 
-    density = F.avg_pool2d(batch, kernel_size=5, stride=1, padding=2).squeeze(0)
 
-    views = torch.cat([raw, edge, density], dim=0)
+def make_density_view(raw):
+    batch = raw.unsqueeze(0)
+    return F.avg_pool2d(batch, kernel_size=5, stride=1, padding=2).squeeze(0)
+
+
+def normalize_views(views):
     return (views - CHANNEL_MEAN) / CHANNEL_STD
+
+
+def make_image_views_from_image(image):
+    image = image.convert("L").resize((IMAGE_SIZE, IMAGE_SIZE))
+    raw = TF.to_tensor(image)
+
+    # Three views: raw digit, Sobel edges, and local stroke density.
+    edge = make_edge_view(raw)
+    density = make_density_view(raw)
+    views = torch.cat([raw, edge, density], dim=0)
+    return normalize_views(views)
 
 
 def make_image_views(path):
@@ -66,6 +78,11 @@ class DigitDataset(Dataset):
         else:
             self.records = pd.read_csv(self.data_dir / "test.csv")
 
+    def image_path(self, image_id, label=None):
+        if self.split == "train":
+            return self.data_dir / "train" / "train" / str(label) / f"{image_id}.png"
+        return self.data_dir / "test" / "test" / f"{image_id}.png"
+
     def __len__(self):
         return len(self.records)
 
@@ -75,7 +92,7 @@ class DigitDataset(Dataset):
 
         if self.split == "train":
             label = int(row["Category"])
-            image_path = self.data_dir / "train" / "train" / str(label) / f"{image_id}.png"
+            image_path = self.image_path(image_id, label)
             if self.augment:
                 pil_image = Image.open(image_path).convert("L")
                 pil_image = self.transform(pil_image)
@@ -84,6 +101,6 @@ class DigitDataset(Dataset):
             image = make_image_views(image_path)
             return image, label
 
-        image_path = self.data_dir / "test" / "test" / f"{image_id}.png"
+        image_path = self.image_path(image_id)
         image = make_image_views(image_path)
         return image, image_id

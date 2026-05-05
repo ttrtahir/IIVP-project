@@ -24,20 +24,28 @@ def set_seed():
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(SEED)
 
-def make_loaders():
-    train_data = DigitDataset(split="train", augment=True)
-    val_data = DigitDataset(split="train", augment=False)
+
+def split_indices_by_label(records):
+    # Keep validation balanced between digit classes.
     train_indices = []
     val_indices = []
 
     generator = torch.Generator().manual_seed(SEED)
-    for label in sorted(train_data.records["Category"].unique()):
-        label_indices = train_data.records.index[train_data.records["Category"] == label].tolist()
+    for label in sorted(records["Category"].unique()):
+        label_indices = records.index[records["Category"] == label].tolist()
         order = torch.randperm(len(label_indices), generator=generator).tolist()
         label_indices = [label_indices[index] for index in order]
         val_count = max(1, int(round(len(label_indices) * VALIDATION_PART)))
         val_indices.extend(label_indices[:val_count])
         train_indices.extend(label_indices[val_count:])
+
+    return train_indices, val_indices
+
+
+def make_loaders():
+    train_data = DigitDataset(split="train", augment=True)
+    val_data = DigitDataset(split="train", augment=False)
+    train_indices, val_indices = split_indices_by_label(train_data.records)
 
     train_loader = DataLoader(Subset(train_data, train_indices), batch_size=BATCH_SIZE, shuffle=True)
     val_loader = DataLoader(Subset(val_data, val_indices), batch_size=BATCH_SIZE * 2, shuffle=False)
@@ -88,6 +96,7 @@ def main():
     set_seed()
     device = get_device()
     train_loader, val_loader = make_loaders()
+
     model = SimpleStrokeCNN().to(device)
     loss_fn = nn.CrossEntropyLoss(label_smoothing=0.03)
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.0001)

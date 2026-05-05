@@ -9,6 +9,7 @@ class SimpleStrokeCNN(nn.Module):
     def __init__(self):
         super().__init__()
 
+        # Let the model choose how much to use each image view.
         self.view_scale = nn.Parameter(torch.tensor([1.0, 0.25, 0.25]))
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(32)
@@ -33,6 +34,7 @@ class SimpleStrokeCNN(nn.Module):
 
     def forward(self, x):
         x = x * self.view_scale.view(1, 3, 1, 1)
+
         x = F.silu(self.bn1(self.conv1(x)))
         x = self.pool(F.silu(self.bn1b(self.conv1b(x))))
         x = F.silu(self.bn2(self.conv2(x)))
