@@ -6,7 +6,7 @@ from .data import DigitDataset
 from .models import SimpleStrokeCNN
 
 BATCH_SIZE = 128
-EPOCHS = 100
+EPOCHS = 25
 LR = 0.001
 SEED = 26
 VALIDATION_PART = 0.15
@@ -102,7 +102,6 @@ def main():
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.0001)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS)
     best_val_accuracy = 0.0
-    best_val_loss = float("inf")
     SAVE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     for epoch in range(1, EPOCHS + 1):
@@ -110,14 +109,10 @@ def main():
         val_loss, val_acc = evaluate(model, val_loader, loss_fn, device)
         scheduler.step()
         print(f"epoch {epoch}: train loss={train_loss:.4f}, train acc={train_acc:.4f}, val loss={val_loss:.4f}, val acc={val_acc:.4f}")
-        is_better_accuracy = val_acc > best_val_accuracy
-        is_lower_loss_tie = val_acc == best_val_accuracy and val_loss < best_val_loss
-        if is_better_accuracy or is_lower_loss_tie:
+        if val_acc > best_val_accuracy:
             best_val_accuracy = val_acc
-            best_val_loss = val_loss
             torch.save(model.state_dict(), SAVE_PATH)
     print("best validation accuracy:", round(best_val_accuracy, 4))
-    print("best validation loss:", round(best_val_loss, 4))
 
 if __name__ == "__main__":
     main()

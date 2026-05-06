@@ -25,15 +25,11 @@ class SimpleStrokeCNN(nn.Module):
         self.bn3 = nn.BatchNorm2d(128)
         self.conv3b = nn.Conv2d(128, 128, kernel_size=3, padding=1)
         self.bn3b = nn.BatchNorm2d(128)
-        self.conv4 = nn.Conv2d(128, 192, kernel_size=3, padding=1)
-        self.bn4 = nn.BatchNorm2d(192)
-        self.conv4b = nn.Conv2d(192, 192, kernel_size=3, padding=1)
-        self.bn4b = nn.BatchNorm2d(192)
         self.pool = nn.MaxPool2d(2, 2)
 
-        self.fc1 = nn.Linear(192 * 2 * 2, 256)
-        self.bn5 = nn.BatchNorm1d(256)
-        self.dropout = nn.Dropout(0.35)
+        self.fc1 = nn.Linear(128 * 4 * 4, 256)
+        self.bn4 = nn.BatchNorm1d(256)
+        self.dropout = nn.Dropout(0.3)
         self.fc2 = nn.Linear(256, NUM_CLASSES)
 
     def forward(self, x):
@@ -45,8 +41,6 @@ class SimpleStrokeCNN(nn.Module):
         x = self.pool(F.silu(self.bn2b(self.conv2b(x))))
         x = F.silu(self.bn3(self.conv3(x)))
         x = self.pool(F.silu(self.bn3b(self.conv3b(x))))
-        x = F.silu(self.bn4(self.conv4(x)))
-        x = self.pool(F.silu(self.bn4b(self.conv4b(x))))
         x = torch.flatten(x, 1)
-        x = self.dropout(F.silu(self.bn5(self.fc1(x))))
+        x = self.dropout(F.silu(self.bn4(self.fc1(x))))
         return self.fc2(x)
