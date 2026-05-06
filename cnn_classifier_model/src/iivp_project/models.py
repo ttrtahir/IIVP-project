@@ -27,10 +27,11 @@ class SimpleStrokeCNN(nn.Module):
         self.bn3b = nn.BatchNorm2d(128)
         self.pool = nn.MaxPool2d(2, 2)
 
-        self.fc1 = nn.Linear(128 * 4 * 4, 256)
-        self.bn4 = nn.BatchNorm1d(256)
-        self.dropout = nn.Dropout(0.3)
-        self.fc2 = nn.Linear(256, NUM_CLASSES)
+        self.drop2d = nn.Dropout2d(0.1)
+        self.fc1 = nn.Linear(128, 128)
+        self.bn4 = nn.BatchNorm1d(128)
+        self.dropout = nn.Dropout(0.35)
+        self.fc2 = nn.Linear(128, NUM_CLASSES)
 
     def forward(self, x):
         x = x * self.view_scale.view(1, 3, 1, 1)
@@ -41,6 +42,8 @@ class SimpleStrokeCNN(nn.Module):
         x = self.pool(F.silu(self.bn2b(self.conv2b(x))))
         x = F.silu(self.bn3(self.conv3(x)))
         x = self.pool(F.silu(self.bn3b(self.conv3b(x))))
+        x = self.drop2d(x)
+        x = F.adaptive_avg_pool2d(x, 1)
         x = torch.flatten(x, 1)
         x = self.dropout(F.silu(self.bn4(self.fc1(x))))
         return self.fc2(x)
