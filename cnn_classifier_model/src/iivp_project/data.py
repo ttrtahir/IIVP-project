@@ -66,10 +66,10 @@ class DigitDataset(Dataset):
         self.split = split
         self.augment = augment
         self.transform = transforms.RandomAffine(
-            degrees=10,
-            translate=(0.06, 0.06),
-            scale=(0.92, 1.10),
-            shear=4,
+            degrees=12,
+            translate=(0.08, 0.08),
+            scale=(0.90, 1.12),
+            shear=5,
             fill=0,
         )
 
