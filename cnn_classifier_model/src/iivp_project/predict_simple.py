@@ -9,7 +9,9 @@ from .models import SimpleStrokeCNN
 from .train_simple import BATCH_SIZE, SAVE_PATH, get_device
 
 
-SUBMISSION_PATH = Path("submissions/simple_submission.csv")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SUBMISSIONS_DIR = PROJECT_ROOT.parent / "submissions"
+SUBMISSION_PATH = SUBMISSIONS_DIR / "simple_submission.csv"
 
 
 def load_model(device):
