@@ -24,15 +24,7 @@ The CNN input has 3 channels:
 - Sobel edge view
 - local stroke-density view
 
-This version is the one selected for the final code because it reproduces the Kaggle-best local CSV from the 100-epoch run.
-
-Known result:
-
-```text
-local validation accuracy: 1.0000
-public Kaggle score: 0.9986702
-```
-
+This version is the one selected for the final code
 ## Project Structure
 
 ```text
