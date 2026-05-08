@@ -1,0 +1,21 @@
+.DS_Store
+.vscode/
+__pycache__/
+*.py[cod]
+
+# Extra local Kaggle download. The repo uses data/.
+iivp-2026-challenge/
+
+# Local training outputs.
+models/*
+!models/final_cnn.pt
+runs/cnn/
+submissions/*_submission.csv
+submissions/local_before_pull/
+submissions/review/
+
+# Keep the useful Kaggle CSVs visible if they are added deliberately.
+!submissions/simple_submission.csv
+!submissions/improved_submission.csv
+!submissions/large_submission.csv
+!submissions/final_submission.csv

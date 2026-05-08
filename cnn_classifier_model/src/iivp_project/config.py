@@ -2,10 +2,13 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+IMAGE_SIZE = 32
+NUM_CLASSES = 10
+SUBMISSIONS_DIR = PROJECT_ROOT.parent / "submissions"
 
 
 def find_data_dir():
-    # Check both this folder and the main project folder.
+    """Find the Kaggle data folder from common local project locations."""
     choices = [
         PROJECT_ROOT / "data",
         PROJECT_ROOT.parent / "data",
@@ -22,5 +25,3 @@ def find_data_dir():
 
 
 DATA_DIR = find_data_dir()
-IMAGE_SIZE = 32
-NUM_CLASSES = 10
