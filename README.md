@@ -58,6 +58,10 @@ submissions/
 
 models/
   final_cnn.pt
+
+eda.ipynb
+eda_submissions.ipynb
+report_visualizations.ipynb
 ```
 
 ## Run The Final CNN
@@ -108,6 +112,14 @@ Id,Category
 5,0
 6,0
 ```
+
+## Notebooks
+
+The notebooks are for checking the work and preparing report/presentation visuals:
+
+- `eda.ipynb`: explores the dataset, class balance, image quality, and sample digit shapes.
+- `eda_submissions.ipynb`: compares submission CSV files and highlights disagreement cases.
+- `report_visualizations.ipynb`: creates raw/edge/density views, model comparison tables, final submission checks, and classical HOG baseline visuals.
 
 ## Notes
 
